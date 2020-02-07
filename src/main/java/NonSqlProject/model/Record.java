@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public class Record {
 
+    private int id;
     private LocalDateTime dateTime;
     private String userName;
     private EventType eventType;
