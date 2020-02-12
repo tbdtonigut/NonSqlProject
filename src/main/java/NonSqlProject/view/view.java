@@ -1,5 +1,7 @@
 package NonSqlProject.view;
 
+import NonSqlProject.model.Incidence;
+
 public class view {
 
     public static void main(String[] args) {
@@ -21,8 +23,23 @@ public class view {
                 default:
                     System.out.println("-- Wrong arguments --");
             }
-
         } while (op != 0);
+    }
+
+    public static void createInc(Incidence i){
+        i = new Incidence();
+
+    }
+
+    public static void deleteInc(Incidence i){
+
+    }
+
+    public static void showInc(Incidence i){
+
+    }
+
+    public static void modifyInc(Incidence i){
 
     }
 
