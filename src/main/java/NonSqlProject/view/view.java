@@ -2,11 +2,20 @@ package NonSqlProject.view;
 
 import NonSqlProject.DAO.DAO;
 import NonSqlProject.exception.MyException;
+import NonSqlProject.model.Employee;
 import NonSqlProject.model.Incidence;
+import NonSqlProject.model.Record;
+
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class view {
+
+    public ArrayList<Employee> employees = new ArrayList<>();
+    public ArrayList<Incidence> incidences = new ArrayList<>();
+    public ArrayList<Record> records = new ArrayList<>();
+
     private static DAO dao = new DAO();
     public static void main(String[] args) {
         // TODO code application logic here
