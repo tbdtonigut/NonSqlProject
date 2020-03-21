@@ -5,6 +5,7 @@
  */
 package NonSqlProject.DAO;
 
+import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoCursor;
@@ -26,7 +27,7 @@ public class DAO {
         try {
             arangoDB.createDatabase(name);
         } catch (ArangoDBException ex) {
-            System.err.println("Fail to create the database:" + ex.getMessage());
+            throw new MyException("Error: Database was not created sucesfully");
         }
     }
 
