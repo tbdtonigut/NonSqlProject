@@ -7,17 +7,12 @@ package NonSqlProject.DAO;
 
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
-import com.arangodb.ArangoCollection;
-import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoDBException;
 import com.arangodb.ArangoDatabase;
 import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
-import com.arangodb.model.AqlQueryOptions;
-import com.arangodb.util.MapBuilder;
-import com.arangodb.velocypack.VPackSlice;
-import com.arangodb.velocypack.exception.VPackException;
+
 import java.util.Collection;
 
 public class DAO {
@@ -67,6 +62,17 @@ public class DAO {
         } catch (ArangoDBException ex) {
             throw new MyException(MyException.documentoNotCreated);
         }
+    }
+
+    public boolean checkLogIn(String username, String password) throws MyException {
+        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
+                BaseDocument.class);
+        if (myDocument == null) {
+            throw new MyException(MyException.wrongUsername);
+        } else if (!password.equals(myDocument.getAttribute("pass"))) {
+            throw new MyException(MyException.wrongPass);
+        }
+        return true;
     }
 
     public Collection<CollectionEntity> getAllCollections() {

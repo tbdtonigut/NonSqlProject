@@ -6,6 +6,8 @@ public class MyException extends Exception {
     public static final int databaseNotCreated = 1;
     public static final int collectionNotCreated = 2;
     public static final int documentoNotCreated = 3;
+    public static final int wrongUsername = 4;
+    public static final int wrongPass = 5;
     
     public MyException(int errorCode) {
         super();
@@ -25,9 +27,14 @@ public class MyException extends Exception {
             case collectionNotCreated:
                 message = "Collection didn't created succesfully";
                 break;
-            
             case documentoNotCreated:
                 message = "Document didn't created succesfully";
+                break;
+            case wrongUsername:
+                message = "This username doesn't exists";
+                break;
+            case wrongPass:
+                message = "You introduced a wrong password";
                 break;
             default:
                 message = "Error";
