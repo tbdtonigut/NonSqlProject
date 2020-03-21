@@ -22,16 +22,17 @@ public class DAO {
 
     final ArangoDB arangoDB = new ArangoDB.Builder().build();
 
-    public boolean createDatabase() {
+    public void createDatabase() throws MyException {
         String name = "mydb";
         try {
-            arangoDB.createDatabase(name);
+            arangoDB.createDatabase(name); 
         } catch (ArangoDBException ex) {
-            throw new MyException("Error: Database was not created sucesfully");
+            throw new MyException(MyException.databaseNotCreated);
         }
+
     }
 
-    public boolean createColletion() {
+    public void createColletion() {
         String collectionName = "firstColletion";
         try {
             CollectionEntity myArangoCollection = arangoDB.db("mydb").createCollection(collectionName);
@@ -39,9 +40,9 @@ public class DAO {
             System.err.println("Fail to create the document:" + ex.getMessage());
         }
     }
-   
-    public void insertEmpleado(Employee e){
+
+    public void insertEmpleado(Employee e) {
         BaseDocument myObject = new BaseDocument();
-        
+
     }
 }

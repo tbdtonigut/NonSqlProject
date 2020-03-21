@@ -1,12 +1,21 @@
 package NonSqlProject.view;
 
+import NonSqlProject.DAO.DAO;
+import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Incidence;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class view {
-
+    private static DAO dao = new DAO();
     public static void main(String[] args) {
         // TODO code application logic here
         int op = 0;
+        try {
+            dao.createDatabase();
+        } catch (MyException ex) {
+            System.out.println(ex.getMessage());
+        }
         do {
             showMenu();
             op = InputAsker.askInt("Select an Option: ");
