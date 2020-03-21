@@ -14,13 +14,14 @@ public class view {
 
     private static DAO dao = new DAO();
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
+
         try {
             // TODO code application logic here
             int op = 0;
             setUpDB();
             do {
-                showMenu();
+                LogIn();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
                     case 1:
@@ -66,6 +67,12 @@ public class view {
                 + "3. Show Incidents\n"
                 + "4. Modify Incident\n"
                 + "0. Exit");
+    }
+
+    public static void LogIn() throws MyException {
+        String username = InputAsker.askString("Introduce your username:");
+        String pass = InputAsker.askString("Introduce your password:");
+        dao.checkLogIn(username, pass);
     }
 
     public static void setUpDB() throws MyException {
