@@ -74,4 +74,7 @@ public class DAO {
         Collection<CollectionEntity> infos = db.getCollections();
         return infos;
     }
+
+
+
 }
