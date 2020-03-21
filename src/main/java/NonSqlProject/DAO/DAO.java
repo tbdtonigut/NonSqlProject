@@ -21,17 +21,16 @@ public class DAO {
 
     final ArangoDB arangoDB = new ArangoDB.Builder().build();
 
-    public void createDatabase() {
+    public boolean createDatabase() {
         String name = "mydb";
         try {
             arangoDB.createDatabase(name);
-            System.out.println("Database created.");
         } catch (ArangoDBException ex) {
             System.err.println("Fail to create the database:" + ex.getMessage());
         }
     }
 
-    public void createColletion() {
+    public boolean createColletion() {
         String collectionName = "firstColletion";
         try {
             CollectionEntity myArangoCollection = arangoDB.db("mydb").createCollection(collectionName);
