@@ -6,27 +6,36 @@ import NonSqlProject.model.Employee;
 import NonSqlProject.model.Incidence;
 import com.arangodb.ArangoDB;
 import NonSqlProject.model.Record;
+import com.arangodb.ArangoCollection;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class view {
 
+    static String usernameLogeado = "";
     private static DAO dao = new DAO();
 
-    public static void main(String[] args)  {
-
+    public static void main(String[] args) {
         try {
-            // TODO code application logic here
+            final ArangoDB arangoDB = new ArangoDB.Builder()
+                    .user("root")
+                    .password("admin")
+                    .build();
+            dao.getAllDocumentsEmployee();
             int op = 0;
-            setUpDB();
+            ArangoCollection collection = arangoDB.db("mydb").collection("employee");
+            System.out.println(collection.getIndexes().size());
             do {
                 LogIn();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
                     case 1:
+                        createInc();
                         break;
                     case 2:
+
                         break;
                     case 3:
                         break;
@@ -40,11 +49,17 @@ public class view {
         } catch (MyException ex) {
             System.out.println(ex.getMessage());
         }
-        
+
     }
 
-    public static void createInc(Incidence i) {
-        i = new Incidence();
+    public static void createInc() {
+        Incidence i = new Incidence();
+        i.setDateTime(LocalDateTime.now());
+        Employee e = dao.getEmployeeByUsername(usernameLogeado);
+        i.setOrigin(e);
+        String destinatario = InputAsker.askString("Introduce el destinatario: ");
+        Employee ed = dao.getEmployeeByUsername(destinatario);
+        String details = InputAsker.askString("Introduce los detalles de la incidencia: ");
 
     }
 
@@ -72,7 +87,14 @@ public class view {
     public static void LogIn() throws MyException {
         String username = InputAsker.askString("Introduce your username:");
         String pass = InputAsker.askString("Introduce your password:");
-        dao.checkLogIn(username, pass);
+        if (dao.checkLogIn(username, pass)) {
+            usernameLogeado = username;
+            showMenu();
+        } else {
+            System.out.println("You introduced the login params wrong.");
+            LogIn();
+        }
+
     }
 
     public static void setUpDB() throws MyException {
@@ -82,7 +104,7 @@ public class view {
         dao.createColletion("employee");
         dao.createColletion("incidence");
         dao.createColletion("record");
-        
+
         //Employee empleado = new Employee("pepe", "12345", "Pepito", "Jull", "5645454545");
         //dao.insertEmpleado(empleado);
     }

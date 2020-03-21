@@ -7,13 +7,17 @@ package NonSqlProject.DAO;
 
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import com.arangodb.ArangoCollection;
+import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoDBException;
 import com.arangodb.ArangoDatabase;
 import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
+import com.arangodb.util.MapBuilder;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class DAO {
 
@@ -68,9 +72,9 @@ public class DAO {
         BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
                 BaseDocument.class);
         if (myDocument == null) {
-            throw new MyException(MyException.wrongUsername);
+            return false;
         } else if (!password.equals(myDocument.getAttribute("pass"))) {
-            throw new MyException(MyException.wrongPass);
+            return false;
         }
         return true;
     }
@@ -81,6 +85,21 @@ public class DAO {
         return infos;
     }
 
+    public Employee getEmployeeByUsername(String username) {
+        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
+                BaseDocument.class);
+        Employee e = new Employee((String) myDocument.getId(), (String) myDocument.getAttribute("pass"), (String) myDocument.getAttribute("firstName"), (String) myDocument.getAttribute("lastName"), (String) myDocument.getAttribute("phone"));
+        return e;
+    }
 
-
+    public void getAllDocumentsEmployee() {
+        String query = "FOR e IN employee RETURN e";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Employee e = getEmployeeByUsername(aDocument.getKey());
+            System.out.println(e.getFirstName());
+        });
+    }
 }
