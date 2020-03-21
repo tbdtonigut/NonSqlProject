@@ -3,30 +3,22 @@ package NonSqlProject.view;
 import NonSqlProject.DAO.DAO;
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
-import com.arangodb.ArangoDB;
-import NonSqlProject.model.Record;
 import com.arangodb.ArangoCollection;
+import com.arangodb.ArangoDB;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class view {
 
-    static String usernameLogeado = "";
+    private static Employee user;
     private static DAO dao = new DAO();
 
     public static void main(String[] args) {
         try {
-            final ArangoDB arangoDB = new ArangoDB.Builder()
-                    .user("root")
-                    .password("admin")
-                    .build();
-            dao.getAllDocumentsEmployee();
             int op = 0;
-            ArangoCollection collection = arangoDB.db("mydb").collection("employee");
-            System.out.println(collection.getIndexes().size());
             do {
                 LogIn();
                 op = InputAsker.askInt("Select an Option: ");
@@ -52,15 +44,27 @@ public class view {
 
     }
 
-    public static void createInc() {
-        Incidence i = new Incidence();
-        i.setDateTime(LocalDateTime.now());
-        Employee e = dao.getEmployeeByUsername(usernameLogeado);
-        i.setOrigin(e);
-        String destinatario = InputAsker.askString("Introduce el destinatario: ");
-        Employee ed = dao.getEmployeeByUsername(destinatario);
-        String details = InputAsker.askString("Introduce los detalles de la incidencia: ");
-
+    public static void createInc() throws MyException {
+        Type type;
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        int index = 1;
+        System.out.println("-- EMPLOYEES --");
+        for (Employee e : employees) {
+            System.out.println(index + ". " + e.getUsername());
+        }
+        int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size() - 1);
+        Employee recipient = employees.get(recipientIndex - 1);
+        String details = InputAsker.askString("Introduce incidence details:");
+        System.out.println(" 1. Normal\n" + "2. Urgent");
+        int typeIndex = InputAsker.askInt("Select a incidence type: ", 1, 2);
+        if (typeIndex == 1) {
+            type = Type.NORMAL;
+        } else {
+            type = Type.URGENT;
+        }
+        Incidence incidence = new Incidence(LocalDateTime.now(), user, recipient, details, type);
+        dao.insertIncidence(incidence);
+        System.out.println("Incidence successfully created");
     }
 
     public static void deleteInc(Incidence i) {
@@ -88,10 +92,10 @@ public class view {
         String username = InputAsker.askString("Introduce your username:");
         String pass = InputAsker.askString("Introduce your password:");
         if (dao.checkLogIn(username, pass)) {
-            usernameLogeado = username;
+            user = dao.getEmployeeByUsername(username);
             showMenu();
         } else {
-            System.out.println("You introduced the login params wrong.");
+            System.out.println("You introduced wrong credentials");
             LogIn();
         }
 

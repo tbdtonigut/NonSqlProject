@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public class Incidence {
 
+    private int id;
     private LocalDateTime dateTime;
     private Employee origin;
     private Employee destination;

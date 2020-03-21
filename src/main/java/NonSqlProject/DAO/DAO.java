@@ -7,6 +7,7 @@ package NonSqlProject.DAO;
 
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import NonSqlProject.model.Incidence;
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
@@ -16,6 +17,7 @@ import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
 import com.arangodb.util.MapBuilder;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,7 +39,6 @@ public class DAO {
                 throw new MyException(MyException.databaseNotCreated);
             }
         }
-
     }
 
     public void createColletion(String nombre) throws MyException {
@@ -54,7 +55,7 @@ public class DAO {
 
     }
 
-    public void insertEmpleado(Employee e) throws MyException {
+    public void insertEmployee(Employee e) throws MyException {
         BaseDocument myObject = new BaseDocument();
         myObject.setKey(e.getUsername());
         myObject.addAttribute("pass", e.getPass());
@@ -63,6 +64,21 @@ public class DAO {
         myObject.addAttribute("phone", e.getPhone());
         try {
             arangoDB.db(name).collection("employee").insertDocument(myObject);
+        } catch (ArangoDBException ex) {
+            throw new MyException(MyException.documentoNotCreated);
+        }
+    }
+
+    public void insertIncidence(Incidence i) throws MyException {
+        BaseDocument myObject = new BaseDocument();
+        myObject.setKey(String.valueOf(getIncidencesCount() + 1));
+        myObject.addAttribute("date", i.getDateTime());
+        myObject.addAttribute("origin", i.getOrigin());
+        myObject.addAttribute("recipient", i.getDestination());
+        myObject.addAttribute("details", i.getDetails());
+        myObject.addAttribute("type", i.getType());
+        try {
+            arangoDB.db(name).collection("incidence").insertDocument(myObject);
         } catch (ArangoDBException ex) {
             throw new MyException(MyException.documentoNotCreated);
         }
@@ -92,14 +108,21 @@ public class DAO {
         return e;
     }
 
-    public void getAllDocumentsEmployee() {
+    public ArrayList<Employee> getAllDocumentsEmployee() {
+        ArrayList<Employee> employees = new ArrayList<>();
         String query = "FOR e IN employee RETURN e";
         Map<String, Object> bindVars = new MapBuilder().get();
         ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
                 BaseDocument.class);
         cursor.forEachRemaining(aDocument -> {
             Employee e = getEmployeeByUsername(aDocument.getKey());
-            System.out.println(e.getFirstName());
+            employees.add(e);
         });
+        return employees;
+    }
+
+    public int getIncidencesCount() {
+        ArangoCollection collection = arangoDB.db("mydb").collection("incidence");
+        return collection.getIndexes().size();
     }
 }
