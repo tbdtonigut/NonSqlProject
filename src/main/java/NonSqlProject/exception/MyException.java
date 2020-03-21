@@ -20,6 +20,7 @@ public class MyException extends Exception {
         switch (errorCode) {
             case databaseNotCreated:
                 message = "Database didn't created succesfully";
+                break;
             default:
                 message = "Error";
                 break;
