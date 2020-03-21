@@ -5,6 +5,8 @@ import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
 import NonSqlProject.model.Incidence;
 import com.arangodb.ArangoDB;
+import NonSqlProject.model.Record;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
