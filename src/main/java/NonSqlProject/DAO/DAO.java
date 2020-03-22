@@ -87,7 +87,9 @@ public class DAO {
                 BaseDocument.class);
         if (myDocument == null) {
             return false;
-        } else return password.equals(myDocument.getAttribute("pass"));
+        } else {
+            return password.equals(myDocument.getAttribute("pass"));
+        }
     }
 
     public Collection<CollectionEntity> getAllCollections() {
@@ -208,10 +210,13 @@ public class DAO {
         ArangoDatabase db = arangoDB.db(name);
         ArangoCollection collection = db.collection("incidence");
         try {
-            collection.updateDocument("myKey", incidence);
+            collection.updateDocument(String.valueOf(incidence.getId()), incidence);
         } catch (ArangoDBException e) {
             throw new MyException(MyException.documentHaventBeenUpdated);
         }
     }
-}
 
+    public void updateEmployee(Employee employee) {
+
+    }
+}

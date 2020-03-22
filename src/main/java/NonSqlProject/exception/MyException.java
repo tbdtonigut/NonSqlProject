@@ -43,6 +43,7 @@ public class MyException extends Exception {
                 break;
             case documentHaventBeenUpdated:
                 message = "Document haven't been updated";
+                break;
             default:
                 message = "Error";
                 break;

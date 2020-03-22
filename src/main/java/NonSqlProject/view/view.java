@@ -87,22 +87,15 @@ public class view {
         int indexIncidence = InputAsker.askInt("Which incidence do you want to update?");
         Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
         System.out.println("== Properties == \n"
-                + "1. Recipient\n"
-                + "2. Details\n"
-                + "3. Type");
+                + "1. Details\n"
+                + "2. Type");
         int indexProperty = InputAsker.askInt("Which attribute do you want to update?");
         switch(indexProperty) {
             case 1:
-                ArrayList <Employee> employees = showEmployees();
-                int indexEmployee = InputAsker.askInt("Select a new employee:",1,employees.size());
-                Employee employee = employees.get(indexEmployee - 1);
-                incidence.setDestination(employee);
-                break;
-            case 2:
                 String details = InputAsker.askString("Introduce the new details:");
                 incidence.setDetails(details);
                 break;
-            case 3:
+            case 2:
                 Type type;
                 System.out.println(" 1. Normal\n" + "2. Urgent");
                 int typeIndex = InputAsker.askInt("Select a incidence type: ", 1, 2);
@@ -114,7 +107,7 @@ public class view {
                 incidence.setType(type);
                 break;
         }
-
+        System.out.println(incidence);
         dao.updateIncidence(incidence);
 
     }
