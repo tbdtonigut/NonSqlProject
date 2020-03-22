@@ -19,10 +19,6 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Object attribute) {
-        
-    }
-
     public String getUsername() {
         return username;
     }
@@ -62,4 +58,5 @@ public class Employee {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
 }

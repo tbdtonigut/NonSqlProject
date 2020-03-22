@@ -153,7 +153,7 @@ public class DAO {
                 recipient.setUsername(username);
             }
         }
-        
+
         Incidence i = new Incidence(Integer.parseInt(myDocument.getKey()), (LocalDateTime) myDocument.getAttribute("date"),
                 origin, recipient, (String) myDocument.getAttribute("details"), (Type) myDocument.getAttribute("type"));
         return i;
@@ -194,6 +194,16 @@ public class DAO {
             throw new MyException(MyException.documentDoesntExists);
         } else {
             collection.deleteDocument(String.valueOf(i.getId()));
+        }
+    }
+
+    public void deleteEmployee(Employee e) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("employee");
+        if (!collection.documentExists(e.getUsername())) {
+            throw new MyException(MyException.documentDoesntExists);
+        } else {
+            collection.deleteDocument(e.getUsername());
         }
     }
 

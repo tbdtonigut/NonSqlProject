@@ -27,10 +27,10 @@ public class view {
                         createInc();
                         break;
                     case 2:
-
+                        deleteInc();
                         break;
                     case 3:
-                        deleteInc();
+
                         break;
                     case 4:
                         manageEmployees();
@@ -77,7 +77,7 @@ public class view {
         for (Incidence i : incidences) {
             System.out.println(i);
         }
-        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?",1,incidences.size());
+        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?", 1, incidences.size());
         Incidence incidence = incidences.get(indexIncidence - 1);
         dao.deleteIncidence(incidence);
         System.out.println("Incidence successfully deleted");
@@ -137,7 +137,7 @@ public class view {
 
     public static void manageEmployees() {
         try {
-            int op = 0;
+            int op;
             do {
                 showMenuEmoloyee();
                 op = InputAsker.askInt("Select an Option: ");
@@ -146,12 +146,12 @@ public class view {
                         createEmployee();
                         break;
                     case 2:
-
+                        deleteEmployee();
                         break;
                     case 3:
                         break;
                     case 4:
-                       
+
                         break;
                     case 5:
                         manageEmployees();
@@ -179,5 +179,21 @@ public class view {
         System.out.println("User was created successfully");
     }
 
-    
+    public static void deleteEmployee() throws MyException {
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        ArrayList<String> usernames = new ArrayList<String>();
+        System.out.println("-- EMPLOYEES --");
+        for (Employee e : employees) {
+            usernames.add(e.getUsername());
+
+        }
+        String userBorrar = InputAsker.askString("Which employee do you want to delete?", usernames);
+        Employee e = dao.getEmployeeByUsername(userBorrar);
+        dao.deleteEmployee(e);
+        System.out.println("Employee successfully deleted");
+    }
+
+    public static void updateEmployee() throws MyException {
+
+    }
 }
