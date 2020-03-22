@@ -20,8 +20,8 @@ public class view {
     public static void main(String[] args) {
         try {
             int op;
+            LogIn();
             do {
-                LogIn();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
                     case 1:
