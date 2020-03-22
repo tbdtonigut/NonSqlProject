@@ -55,6 +55,18 @@ public class DAO {
 
     }
 
+    public boolean checkLogIn(String username, String password) throws MyException {
+        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
+                BaseDocument.class);
+        if (myDocument == null) {
+            return false;
+        } else {
+            return password.equals(myDocument.getAttribute("pass"));
+        }
+    }
+
+    //INSERTS EN LA BASE DE DATOS
+
     public void insertEmployee(Employee e) throws MyException {
         BaseDocument myObject = new BaseDocument();
         myObject.setKey(e.getUsername());
@@ -97,21 +109,29 @@ public class DAO {
         }
     }
 
-    public boolean checkLogIn(String username, String password) throws MyException {
-        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
-                BaseDocument.class);
-        if (myDocument == null) {
-            return false;
-        } else {
-            return password.equals(myDocument.getAttribute("pass"));
+    //UPDATES EN LA BASE DE DATOS
+
+    public void updateIncidence(Incidence incidence) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("incidence");
+        try {
+            collection.updateDocument(String.valueOf(incidence.getId()), incidence);
+        } catch (ArangoDBException e) {
+            throw new MyException(MyException.documentHaventBeenUpdated);
         }
     }
 
-    public Collection<CollectionEntity> getAllCollections() {
+    public void updateEmployee(Employee employee) throws MyException {
         ArangoDatabase db = arangoDB.db(name);
-        Collection<CollectionEntity> infos = db.getCollections();
-        return infos;
+        ArangoCollection collection = db.collection("employee");
+        try {
+            collection.updateDocument(employee.getUsername(), employee);
+        } catch (ArangoDBException e) {
+            throw new MyException(MyException.documentHaventBeenUpdated);
+        }
     }
+
+    //GETS DE LA BASE DE DATOS
 
     public Employee getEmployeeByUsername(String username) {
         BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
@@ -169,91 +189,7 @@ public class DAO {
         return i;
     }
 
-    public ArrayList<Employee> getAllDocumentsEmployee() {
-        ArrayList<Employee> employees = new ArrayList<>();
-        String query = "FOR e IN employee RETURN e";
-        Map<String, Object> bindVars = new MapBuilder().get();
-        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
-                BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {
-            Employee e = getEmployeeByUsername(aDocument.getKey());
-            employees.add(e);
-        });
-        return employees;
-    }
-
-    public ArrayList<Incidence> getAllDocumentsIncidence() {
-        ArrayList<Incidence> incidences = new ArrayList<>();
-        String query = "FOR i IN incidence RETURN i";
-        Map<String, Object> bindVars = new MapBuilder().get();
-        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
-                BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {
-            Incidence i = getIncidenceById(aDocument.getKey());
-            incidences.add(i);
-        });
-        return incidences;
-    }
-
-    public void deleteIncidence(Incidence i) throws MyException {
-        ArangoDatabase db = arangoDB.db(name);
-        ArangoCollection collection = db.collection("incidence");
-        if (!collection.documentExists(String.valueOf(i.getId()))) {
-            throw new MyException(MyException.documentDoesntExists);
-        } else {
-            collection.deleteDocument(String.valueOf(i.getId()));
-        }
-    }
-
-    public void deleteEmployee(Employee e) throws MyException {
-        ArangoDatabase db = arangoDB.db(name);
-        ArangoCollection collection = db.collection("employee");
-        if (!collection.documentExists(e.getUsername())) {
-            throw new MyException(MyException.documentDoesntExists);
-        } else {
-            collection.deleteDocument(e.getUsername());
-        }
-    }
-
-    public int getIncidencesCount() {
-        ArangoCollection collection = arangoDB.db("mydb").collection("incidence");
-        return collection.getIndexes().size();
-    }
-
-    public void updateIncidence(Incidence incidence) throws MyException {
-        ArangoDatabase db = arangoDB.db(name);
-        ArangoCollection collection = db.collection("incidence");
-        try {
-            collection.updateDocument(String.valueOf(incidence.getId()), incidence);
-        } catch (ArangoDBException e) {
-            throw new MyException(MyException.documentHaventBeenUpdated);
-        }
-    }
-
-    public void updateEmployee(Employee employee) throws MyException {
-        ArangoDatabase db = arangoDB.db(name);
-        ArangoCollection collection = db.collection("employee");
-        try {
-            collection.updateDocument(employee.getUsername(), employee);
-        } catch (ArangoDBException e) {
-            throw new MyException(MyException.documentHaventBeenUpdated);
-        }
-    }
-
-    public ArrayList<Record> getAllDocumentsRecord() {
-        ArrayList<Record> records = new ArrayList<>();
-        String query = "FOR r IN record RETURN r";
-        Map<String, Object> bindVars = new MapBuilder().get();
-        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
-                BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {
-            Record r = getRecordById(aDocument.getKey());
-            records.add(r);
-        });
-        return records;
-    }
-
-    private Record getRecordById(String key) {
+    public Record getRecordById(String key) {
         Record r = new Record();
         long month = 0, year = 0, day = 0, hour = 0, nano = 0, minute = 0, second = 0;
         BaseDocument myDocument = arangoDB.db(name).collection("record").getDocument(key,
@@ -296,4 +232,73 @@ public class DAO {
         r = new Record(Integer.parseInt(key), date, employee, EventType.valueOf((myDocument.getAttribute("eventtype").toString())));
         return r;
     }
+
+    public ArrayList<Employee> getAllDocumentsEmployee() {
+        ArrayList<Employee> employees = new ArrayList<>();
+        String query = "FOR e IN employee RETURN e";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Employee e = getEmployeeByUsername(aDocument.getKey());
+            employees.add(e);
+        });
+        return employees;
+    }
+
+    public ArrayList<Incidence> getAllDocumentsIncidence() {
+        ArrayList<Incidence> incidences = new ArrayList<>();
+        String query = "FOR i IN incidence RETURN i";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Incidence i = getIncidenceById(aDocument.getKey());
+            incidences.add(i);
+        });
+        return incidences;
+    }
+
+    public ArrayList<Record> getAllDocumentsRecord() {
+        ArrayList<Record> records = new ArrayList<>();
+        String query = "FOR r IN record RETURN r";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Record r = getRecordById(aDocument.getKey());
+            records.add(r);
+        });
+        return records;
+    }
+
+    public Collection<CollectionEntity> getAllCollections() {
+        ArangoDatabase db = arangoDB.db(name);
+        Collection<CollectionEntity> infos = db.getCollections();
+        return infos;
+    }
+
+    //DELETES DE LA BASE DE DATOS
+
+    public void deleteIncidence(Incidence i) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("incidence");
+        if (!collection.documentExists(String.valueOf(i.getId()))) {
+            throw new MyException(MyException.documentDoesntExists);
+        } else {
+            collection.deleteDocument(String.valueOf(i.getId()));
+        }
+    }
+
+    public void deleteEmployee(Employee e) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("employee");
+        if (!collection.documentExists(e.getUsername())) {
+            throw new MyException(MyException.documentDoesntExists);
+        } else {
+            collection.deleteDocument(e.getUsername());
+        }
+    }
+
+
 }

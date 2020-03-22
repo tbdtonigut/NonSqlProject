@@ -7,10 +7,6 @@ import NonSqlProject.model.Enum.EventType;
 import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
 import NonSqlProject.model.Record;
-import com.arangodb.ArangoCollection;
-import com.arangodb.ArangoDB;
-
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -22,6 +18,7 @@ public class view {
     public static void main(String[] args) {
         try {
             int op;
+            setUpDB();
             LogIn();
             do {
                 showMenu();
@@ -34,7 +31,7 @@ public class view {
                         deleteInc();
                         break;
                     case 3:
-                        showInc();
+                        showIncidences();
                         break;
                     case 4:
                         modifyInc();
@@ -59,16 +56,31 @@ public class view {
 
     }
 
-    private static void showRecords() {
-        ArrayList<Record> records = dao.getAllDocumentsRecord();
-        System.out.println("-- RECORDS --");
-        for (Record r : records) {
-            System.out.println("id:" + r.getId()
-                    + "\n Date:" + r.getDateTime()
-                    + "\n Employee:" + r.getEmployee().getUsername()
-                    + "\n Type:" + r.getEventType());
-        }
+    public static void setUpDB() throws MyException {
+        //creamos la base de datos si no esta conectada
+        dao.createDatabase();
+        //creamos las tablas de la base de datos
+        dao.createColletion("employee");
+        dao.createColletion("incidence");
+        dao.createColletion("record");
     }
+
+    public static void LogIn() throws MyException {
+        String username = InputAsker.askString("Introduce your username:");
+        String pass = InputAsker.askString("Introduce your password:");
+        if (dao.checkLogIn(username, pass)) {
+            user = dao.getEmployeeByUsername(username);
+            LocalDateTime localDateTime = LocalDateTime.now();
+            Record record = new Record(localDateTime, user, EventType.I);
+            dao.insertRecord(record);
+        } else {
+            System.out.println("You introduced wrong credentials");
+            LogIn();
+        }
+
+    }
+
+    //METODOS DE INCIDENCES
 
     public static void createInc() throws MyException {
         Type type;
@@ -99,11 +111,12 @@ public class view {
         System.out.println("Incidence successfully deleted");
     }
 
-    public static void showInc() throws MyException {
-        showIncidences();
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Record record = new Record(localDateTime, user, EventType.C);
-        dao.insertRecord(record);
+    public static void showIncidences() {
+        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
+        System.out.println("-- INCIDENCES --");
+        for (Incidence i : incidences) {
+            System.out.println(i);
+        }
     }
 
     public static void modifyInc() throws MyException {
@@ -138,74 +151,13 @@ public class view {
 
     }
 
-    public static void showMenu() {
-        System.out.println("== Main Menu ==\n"
-                + "1. Create Incident\n"
-                + "2. Delete Incident\n"
-                + "3. Show Incidents\n"
-                + "4. Modify Incident\n"
-                + "5. Manage Employees\n"
-                + "0. Exit");
-    }
-
-    public static void showMenuEmoloyee() {
-        System.out.println("== Employee Main Menu ==\n"
-                + "1. Create Employee\n"
-                + "2. Delete Employee\n"
-                + "3. Show Employee\n"
-                + "4. Modify Employee\n"
-                + "0. Exit");
-    }
-
-    public static void LogIn() throws MyException {
-        String username = InputAsker.askString("Introduce your username:");
-        String pass = InputAsker.askString("Introduce your password:");
-        if (dao.checkLogIn(username, pass)) {
-            user = dao.getEmployeeByUsername(username);
-            LocalDateTime localDateTime = LocalDateTime.now();
-            Record record = new Record(localDateTime, user, EventType.I);
-            dao.insertRecord(record);
-        } else {
-            System.out.println("You introduced wrong credentials");
-            LogIn();
-        }
-
-    }
-
-    public static void setUpDB() throws MyException {
-        //creamos la base de datos si no esta conectada
-        dao.createDatabase();
-        //creamos las tablas de la base de datos
-        dao.createColletion("employee");
-        dao.createColletion("incidence");
-        dao.createColletion("record");
-    }
-
-    public static ArrayList<Employee> showEmployees() {
-        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
-        int index = 1;
-        System.out.println("-- EMPLOYEES --");
-        for (Employee e : employees) {
-            System.out.println(index + ". " + e.getUsername());
-            index++;
-        }
-        return employees;
-    }
-
-    public static void showIncidences() {
-        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
-        System.out.println("-- INCIDENCES --");
-        for (Incidence i : incidences) {
-            System.out.println(i);
-        }
-    }
+    //MENU DE EMPLOYEES
 
     public static void manageEmployees() {
         try {
 
             int op;
             do {
-
                 showMenuEmoloyee();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
@@ -233,6 +185,8 @@ public class view {
         }
     }
 
+    //METODOS DE EMPLOYEES
+
     public static void createEmployee() throws MyException {
         String userActual = InputAsker.askString("Introduce the username you want: ");
         String pass = InputAsker.askString("Introduce the password you want: ");
@@ -259,7 +213,33 @@ public class view {
     }
 
     public static void updateEmployee() throws MyException {
+        ArrayList<Employee> employees = showEmployees();
+        int indexEmployee = InputAsker.askInt("Which employee do you want to update?", 1, employees.size());
+        Employee employee = dao.getEmployeeByUsername(employees.get(indexEmployee).getUsername());
+        System.out.println("== Properties == \n"
+                + "1. First Name\n"
+                + "2. Last Name\n"
+                + "3. Phone \n"
+                + "4. Pass");
+        int indexProperty = InputAsker.askInt("Which attribute do you want to update?");
 
+        switch (indexProperty) {
+            case 1:
+                String firstName = InputAsker.askString("Introduce the new first name:");
+                employee.setFirstName(firstName);
+                break;
+            case 2:
+                String lastName = InputAsker.askString("Introduce the new first name:");
+                employee.setLastName(lastName);
+                break;
+            case 3:
+                String phone = InputAsker.askString("Introduce your new phone:");
+                employee.setPhone(phone);
+            case 4:
+                String pass = InputAsker.askString("Introduce your new password: ");
+                employee.setPass(pass);
+        }
+        dao.updateEmployee(employee);
     }
 
     public static void showEmployee() throws MyException {
@@ -267,6 +247,49 @@ public class view {
         System.out.println("-- EMPLOYEES --");
         for (Employee e : employees) {
             System.out.println(e.toString());
+        }
+    }
+
+    public static ArrayList<Employee> showEmployees() {
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        int index = 1;
+        System.out.println("-- EMPLOYEES --");
+        for (Employee e : employees) {
+            System.out.println(index + ". " + e.getUsername());
+            index++;
+        }
+        return employees;
+    }
+
+    //SOUTS
+
+    public static void showMenu() {
+        System.out.println("== Main Menu ==\n"
+                + "1. Create Incident\n"
+                + "2. Delete Incident\n"
+                + "3. Show Incidents\n"
+                + "4. Modify Incident\n"
+                + "5. Manage Employees\n"
+                + "0. Exit");
+    }
+
+    public static void showMenuEmoloyee() {
+        System.out.println("== Employee Main Menu ==\n"
+                + "1. Create Employee\n"
+                + "2. Delete Employee\n"
+                + "3. Show Employee\n"
+                + "4. Modify Employee\n"
+                + "0. Exit");
+    }
+
+    private static void showRecords() {
+        ArrayList<Record> records = dao.getAllDocumentsRecord();
+        System.out.println("-- RECORDS --");
+        for (Record r : records) {
+            System.out.println("id:" + r.getId()
+                    + "\n Date:" + r.getDateTime()
+                    + "\n Employee:" + r.getEmployee().getUsername()
+                    + "\n Type:" + r.getEventType());
         }
     }
 }
