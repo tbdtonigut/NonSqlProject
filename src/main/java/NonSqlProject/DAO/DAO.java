@@ -117,7 +117,7 @@ public class DAO {
         try {
             collection.updateDocument(String.valueOf(incidence.getId()), incidence);
         } catch (ArangoDBException e) {
-            throw new MyException(MyException.documentHaventBeenUpdated);
+            throw new MyException(MyException.documentHaventBeenUpdnated);
         }
     }
 
@@ -127,7 +127,7 @@ public class DAO {
         try {
             collection.updateDocument(employee.getUsername(), employee);
         } catch (ArangoDBException e) {
-            throw new MyException(MyException.documentHaventBeenUpdated);
+            throw new MyException(MyException.documentHaventBeenUpdnated);
         }
     }
 

@@ -57,15 +57,24 @@ public class view {
     }
 
     public static void setUpDB() throws MyException {
+        boolean validator = false;
         //creamos la base de datos si no esta conectada
         dao.createDatabase();
         //creamos las tablas de la base de datos
         dao.createColletion("employee");
         dao.createColletion("incidence");
         dao.createColletion("record");
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        for (Employee e : employees) {
+            if (e.getUsername().equalsIgnoreCase("admin")) {
+                validator = true;
+            }
+        }
+        if (validator == false) {
+            Employee employee = new Employee("admin", "admin", "admin", "admin", "66666666");
+            dao.insertEmployee(employee);
+        }
 
-        Employee employee = new Employee("admin", "admin", "admin", "admin", "66666666");
-        dao.insertEmployee(employee);
     }
 
     public static void LogIn() throws MyException {
@@ -84,7 +93,6 @@ public class view {
     }
 
     //METODOS DE INCIDENCES
-
     public static void createInc() throws MyException {
         Type type;
         ArrayList<Employee> employees = showEmployees();
@@ -167,7 +175,6 @@ public class view {
     }
 
     //MENU DE EMPLOYEES
-
     public static void manageEmployees() {
         try {
 
@@ -201,7 +208,6 @@ public class view {
     }
 
     //METODOS DE EMPLOYEES
-
     public static void createEmployee() throws MyException {
         String userActual = InputAsker.askString("Introduce the username you want: ");
         String pass = InputAsker.askString("Introduce the password you want: ");
@@ -230,7 +236,7 @@ public class view {
     public static void updateEmployee() throws MyException {
         ArrayList<Employee> employees = showEmployees();
         int indexEmployee = InputAsker.askInt("Which employee do you want to update?", 1, employees.size());
-        Employee employee = dao.getEmployeeByUsername(employees.get(indexEmployee).getUsername());
+        Employee employee = dao.getEmployeeByUsername(employees.get(indexEmployee -1).getUsername());
         System.out.println("== Properties == \n"
                 + "1. First Name\n"
                 + "2. Last Name\n"
@@ -256,6 +262,7 @@ public class view {
                 employee.setPass(pass);
         }
         dao.updateEmployee(employee);
+        System.out.println("The user was successfully updated");
     }
 
     public static void showEmployee() throws MyException {
@@ -278,7 +285,6 @@ public class view {
     }
 
     //SOUTS
-
     public static void showMenu() {
         System.out.println("== Main Menu ==\n"
                 + "1. Create Incident\n"
@@ -286,6 +292,7 @@ public class view {
                 + "3. Show Incidents\n"
                 + "4. Modify Incident\n"
                 + "5. Manage Employees\n"
+                + "6. Show records\n"
                 + "0. Exit");
     }
 
