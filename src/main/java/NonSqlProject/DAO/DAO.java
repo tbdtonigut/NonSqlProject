@@ -230,8 +230,14 @@ public class DAO {
         }
     }
 
-    public void updateEmployee(Employee employee) {
-
+    public void updateEmployee(Employee employee) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("employee");
+        try {
+            collection.updateDocument(employee.getUsername(), employee);
+        } catch (ArangoDBException e) {
+            throw new MyException(MyException.documentHaventBeenUpdated);
+        }
     }
 
     public ArrayList<Record> getAllDocumentsRecord() {

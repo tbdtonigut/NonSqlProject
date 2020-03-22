@@ -24,6 +24,7 @@ public class view {
             int op;
             LogIn();
             do {
+                showMenu();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
                     case 1:
@@ -62,13 +63,16 @@ public class view {
         ArrayList<Record> records = dao.getAllDocumentsRecord();
         System.out.println("-- RECORDS --");
         for (Record r : records) {
-            System.out.println(r);
+            System.out.println("id:" + r.getId()
+                    + "\n Date:" + r.getDateTime()
+                    + "\n Employee:" + r.getEmployee().getUsername()
+                    + "\n Type:" + r.getEventType());
         }
     }
 
     public static void createInc() throws MyException {
         Type type;
-        ArrayList <Employee> employees = showEmployees();
+        ArrayList<Employee> employees = showEmployees();
         int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size());
         Employee recipient = employees.get(recipientIndex - 1);
         String details = InputAsker.askString("Introduce incidence details:");
@@ -79,7 +83,7 @@ public class view {
         } else {
             type = Type.URGENT;
             LocalDateTime localDateTime = LocalDateTime.now();
-            Record record = new Record(localDateTime,user,EventType.U);
+            Record record = new Record(localDateTime, user, EventType.U);
             dao.insertRecord(record);
         }
         Incidence incidence = new Incidence(LocalDateTime.now(), user, recipient, details, type);
@@ -98,7 +102,7 @@ public class view {
     public static void showInc() throws MyException {
         showIncidences();
         LocalDateTime localDateTime = LocalDateTime.now();
-        Record record = new Record(localDateTime,user,EventType.C);
+        Record record = new Record(localDateTime, user, EventType.C);
         dao.insertRecord(record);
     }
 
@@ -112,7 +116,7 @@ public class view {
 
         int indexProperty = InputAsker.askInt("Which attribute do you want to update?");
 
-        switch(indexProperty) {
+        switch (indexProperty) {
             case 1:
                 String details = InputAsker.askString("Introduce the new details:");
                 incidence.setDetails(details);
@@ -159,9 +163,8 @@ public class view {
         if (dao.checkLogIn(username, pass)) {
             user = dao.getEmployeeByUsername(username);
             LocalDateTime localDateTime = LocalDateTime.now();
-            Record record = new Record(localDateTime,user,EventType.I);
+            Record record = new Record(localDateTime, user, EventType.I);
             dao.insertRecord(record);
-            showMenu();
         } else {
             System.out.println("You introduced wrong credentials");
             LogIn();
