@@ -7,6 +7,8 @@ import NonSqlProject.model.Enum.EventType;
 import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
 import NonSqlProject.model.Record;
+
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -41,7 +43,6 @@ public class view {
                         break;
                     case 6:
                         showRecords();
-                        //Hola
                         break;
                     case 0:
                         System.out.println("Closing...");
@@ -53,7 +54,6 @@ public class view {
         } catch (MyException ex) {
             System.out.println(ex.getMessage());
         }
-
     }
 
     public static void setUpDB() throws MyException {
@@ -63,6 +63,9 @@ public class view {
         dao.createColletion("employee");
         dao.createColletion("incidence");
         dao.createColletion("record");
+
+        Employee employee = new Employee("admin", "admin", "admin", "admin", "66666666");
+        dao.insertEmployee(employee);
     }
 
     public static void LogIn() throws MyException {
@@ -85,6 +88,7 @@ public class view {
     public static void createInc() throws MyException {
         Type type;
         ArrayList<Employee> employees = showEmployees();
+
         int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size());
         Employee recipient = employees.get(recipientIndex - 1);
         String details = InputAsker.askString("Introduce incidence details:");
@@ -103,20 +107,31 @@ public class view {
         System.out.println("Incidence successfully created");
     }
 
-    public static void deleteInc() throws MyException {
-        showIncidences();
-        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?");
-        Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
-        dao.deleteIncidence(incidence);
-        System.out.println("Incidence successfully deleted");
+    public static boolean deleteInc() throws MyException {
+        ArrayList<Incidence> incidences = showIncidences();
+        if (!incidences.isEmpty()) {
+            int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?");
+            for (Incidence i : incidences) {
+                if (indexIncidence == i.getId()) {
+                    Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
+                    dao.deleteIncidence(incidence);
+                    System.out.println("Incidence successfully deleted");
+                    return true;
+                }
+            }
+        } else {
+            System.out.println("We don't have incidences yet");
+        }
+        return false;
     }
 
-    public static void showIncidences() {
+    public static ArrayList<Incidence> showIncidences() {
         ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
         System.out.println("-- INCIDENCES --");
         for (Incidence i : incidences) {
             System.out.println(i);
         }
+        return incidences;
     }
 
     public static void modifyInc() throws MyException {

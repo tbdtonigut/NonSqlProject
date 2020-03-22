@@ -9,8 +9,8 @@ public class MyException extends Exception {
     public static final int wrongUsername = 4;
     public static final int wrongPass = 5;
     public static final int documentDoesntExists = 6;
-    public static final int documentHaventBeenUpdated = 7;
-    
+    public static final int documentHaventBeenUpdnated = 7;
+
     public MyException(int errorCode) {
         super();
         this.errorCode = errorCode;
@@ -41,7 +41,7 @@ public class MyException extends Exception {
             case documentDoesntExists:
                 message = "Document doesn't exists";
                 break;
-            case documentHaventBeenUpdated:
+            case documentHaventBeenUpdnated:
                 message = "Document haven't been updated";
                 break;
             default:
