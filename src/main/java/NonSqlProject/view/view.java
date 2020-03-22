@@ -43,6 +43,7 @@ public class view {
                         break;
                     case 6:
                         showRecords();
+                        //Hola
                         break;
                     case 0:
                         System.out.println("Closing...");
