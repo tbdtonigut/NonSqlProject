@@ -31,6 +31,8 @@ public class view {
                         break;
                     case 3:
                         break;
+                    case 4:
+                        //manageEmployees();
                     case 0:
                         System.out.println("Closing...");
                         break;
@@ -52,8 +54,8 @@ public class view {
         for (Employee e : employees) {
             System.out.println(index + ". " + e.getUsername());
         }
-        int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size() - 1);
-        Employee recipient = employees.get(recipientIndex - 1);
+        int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size());
+        Employee recipient = employees.get(recipientIndex -1);
         String details = InputAsker.askString("Introduce incidence details:");
         System.out.println(" 1. Normal\n" + "2. Urgent");
         int typeIndex = InputAsker.askInt("Select a incidence type: ", 1, 2);
@@ -112,4 +114,7 @@ public class view {
         //Employee empleado = new Employee("pepe", "12345", "Pepito", "Jull", "5645454545");
         //dao.insertEmpleado(empleado);
     }
+
+
+
 }
