@@ -67,4 +67,11 @@ public class Record {
         this.eventType = eventType;
     }
 
+    @Override
+    public String toString() {
+        return "id:" + id +
+                "\n Date:" + dateTime +
+                "\n Employee:" + employee +
+                "\n Type:" + eventType;
+    }
 }
