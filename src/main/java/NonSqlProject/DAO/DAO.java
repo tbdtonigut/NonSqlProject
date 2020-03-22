@@ -27,8 +27,6 @@ import java.util.Map;
 public class DAO {
 
     final String name = "mydb";
-    Map<String, String> mapOrigin;
-    Map<String, String> mapReceptor;
     final ArangoDB arangoDB = new ArangoDB.Builder()
             .user("root")
             .password("admin")
@@ -115,45 +113,17 @@ public class DAO {
     public Incidence getIncidenceById(String id) {
         BaseDocument myDocument = arangoDB.db(name).collection("incidence").getDocument(id,
                 BaseDocument.class);
-        mapOrigin = new HashMap<String, String>();
-        mapOrigin = (HashMap) myDocument.getAttribute("origin");
-        Employee origin = new Employee();
-        for (Map.Entry<String, String> entry : mapOrigin.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase("firstName")) {
-                origin.setFirstName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
-                origin.setLastName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("pass")) {
-                origin.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("phone")) {
-                origin.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("username")) {
-                String datos = entry.getValue();
-                String[] usernameParts = datos.split("/");
-                String username = usernameParts[1];
-                origin.setUsername(username);
-            }
-        }
-        mapReceptor = new HashMap<String, String>();
-        mapReceptor = (HashMap) myDocument.getAttribute("recipient");
-        Employee recipient = new Employee();
-        for (Map.Entry<String, String> entry : mapReceptor.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase("firstName")) {
-                recipient.setFirstName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
-                recipient.setLastName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("pass")) {
-                recipient.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("phone")) {
-                recipient.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("username")) {
-                String datos = entry.getValue();
-                String[] usernameParts = datos.split("/");
-                String username = usernameParts[1];
-                recipient.setUsername(username);
-            }
-        }
-        
+
+        Map<String, String> mapOrigin = (HashMap) myDocument.getAttribute("origin");
+        String[] data= mapOrigin.get("username").split("/");
+        String username = data[1];
+        Employee origin = getEmployeeByUsername(username);
+
+        Map<String, String> mapRecipient = (HashMap) myDocument.getAttribute("recipient");
+        String[] data2= mapOrigin.get("username").split("/");
+        String usernameRecipient = data2[1];
+        Employee recipient = getEmployeeByUsername(usernameRecipient);
+
         Incidence i = new Incidence(Integer.parseInt(myDocument.getKey()), (LocalDateTime) myDocument.getAttribute("date"),
                 origin, recipient, (String) myDocument.getAttribute("details"), (Type) myDocument.getAttribute("type"));
         return i;
