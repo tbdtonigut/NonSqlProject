@@ -27,8 +27,6 @@ import java.util.Map;
 public class DAO {
 
     final String name = "mydb";
-    Map<String, String> mapOrigin;
-    Map<String, String> mapReceptor;
     final ArangoDB arangoDB = new ArangoDB.Builder()
             .user("root")
             .password("admin")
@@ -75,7 +73,7 @@ public class DAO {
 
     public void insertIncidence(Incidence i) throws MyException {
         BaseDocument myObject = new BaseDocument();
-        myObject.setKey(String.valueOf(getIncidencesCount() + 1));
+        myObject.setKey(null);
         myObject.addAttribute("date", i.getDateTime());
         myObject.addAttribute("origin", i.getOrigin());
         myObject.addAttribute("recipient", i.getDestination());
@@ -113,49 +111,52 @@ public class DAO {
     }
 
     public Incidence getIncidenceById(String id) {
+        Incidence i = new Incidence();
+        long month = 0, year = 0, day = 0, hour = 0, nano = 0, minute = 0, second = 0;
         BaseDocument myDocument = arangoDB.db(name).collection("incidence").getDocument(id,
                 BaseDocument.class);
-        mapOrigin = new HashMap<String, String>();
-        mapOrigin = (HashMap) myDocument.getAttribute("origin");
-        Employee origin = new Employee();
-        for (Map.Entry<String, String> entry : mapOrigin.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase("firstName")) {
-                origin.setFirstName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
-                origin.setLastName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("pass")) {
-                origin.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("phone")) {
-                origin.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("username")) {
-                String datos = entry.getValue();
-                String[] usernameParts = datos.split("/");
-                String username = usernameParts[1];
-                origin.setUsername(username);
-            }
-        }
-        mapReceptor = new HashMap<String, String>();
-        mapReceptor = (HashMap) myDocument.getAttribute("recipient");
-        Employee recipient = new Employee();
-        for (Map.Entry<String, String> entry : mapReceptor.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase("firstName")) {
-                recipient.setFirstName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
-                recipient.setLastName(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("pass")) {
-                recipient.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("phone")) {
-                recipient.setPhone(entry.getValue());
-            } else if (entry.getKey().equalsIgnoreCase("username")) {
-                String datos = entry.getValue();
-                String[] usernameParts = datos.split("/");
-                String username = usernameParts[1];
-                recipient.setUsername(username);
-            }
-        }
 
-        Incidence i = new Incidence(Integer.parseInt(myDocument.getKey()), (LocalDateTime) myDocument.getAttribute("date"),
-                origin, recipient, (String) myDocument.getAttribute("details"), (Type) myDocument.getAttribute("type"));
+        Map<String, String> mapOrigin = (HashMap) myDocument.getAttribute("origin");
+        String username = mapOrigin.get("username");
+        Employee origin = getEmployeeByUsername(username);
+        Map<String, String> mapRecipient = (HashMap) myDocument.getAttribute("recipient");
+        String usernameRecipient = mapRecipient.get("username");
+        Employee recipient = getEmployeeByUsername(usernameRecipient);
+       
+        Map<String, Map<String, Long>> allDates = new HashMap<String, Map<String, Long>>();
+        allDates = (Map<String, Map<String, Long>>) myDocument.getAttribute("date");
+        for (Map.Entry<String, Map<String, Long>> entry : allDates.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase("date")) {
+                Map<String, Long> map = entry.getValue();
+                for (Map.Entry<String, Long> entry2 : map.entrySet()) {
+                    if (entry2.getKey().equalsIgnoreCase("month")) {
+                        month = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("year")) {
+                        year = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("day")) {
+                        day = entry2.getValue();
+                    }
+                }
+            } else if (entry.getKey().equalsIgnoreCase("time")) {
+                Map<String, Long> map = entry.getValue();
+                for (Map.Entry<String, Long> entry2 : map.entrySet()) {
+                    if (entry2.getKey().equalsIgnoreCase("hour")) {
+                        hour = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("nano")) {
+                        nano = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("minute")) {
+                        minute = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("second")) {
+                        second = entry2.getValue();
+                    }
+                }
+            }
+            LocalDateTime fecha = LocalDateTime.of((int)year,(int) month, (int)day, (int)hour,(int) minute, (int)second, (int)nano);
+
+            i = new Incidence(Integer.parseInt(myDocument.getKey()), fecha,
+                    origin, recipient, (String) myDocument.getAttribute("details"), Type.valueOf(myDocument.getAttribute("type").toString()));
+
+        }
         return i;
     }
 
@@ -179,9 +180,10 @@ public class DAO {
         Map<String, Object> bindVars = new MapBuilder().get();
         ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
                 BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {
-            System.out.println(aDocument.getKey());
+        cursor.forEachRemaining(aDocument -> {     
+            System.out.println("juan");
             Incidence i = getIncidenceById(aDocument.getKey());
+            System.out.println("pepe");
             incidences.add(i);
         });
         return incidences;

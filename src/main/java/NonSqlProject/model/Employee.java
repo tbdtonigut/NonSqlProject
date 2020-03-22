@@ -59,4 +59,10 @@ public class Employee {
         this.phone = phone;
     }
 
+    @Override
+    public String toString() {
+        return "username: " + username +", firstName: " + firstName + ", lastName: " + lastName + ", phone:" + phone;
+    }
+
+    
 }

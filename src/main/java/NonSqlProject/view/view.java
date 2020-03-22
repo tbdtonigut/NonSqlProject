@@ -77,8 +77,8 @@ public class view {
         for (Incidence i : incidences) {
             System.out.println(i);
         }
-        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?", 1, incidences.size());
-        Incidence incidence = incidences.get(indexIncidence - 1);
+        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?");
+        Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
         dao.deleteIncidence(incidence);
         System.out.println("Incidence successfully deleted");
     }
@@ -137,8 +137,10 @@ public class view {
 
     public static void manageEmployees() {
         try {
+
             int op;
             do {
+
                 showMenuEmoloyee();
                 op = InputAsker.askInt("Select an Option: ");
                 switch (op) {
@@ -149,12 +151,10 @@ public class view {
                         deleteEmployee();
                         break;
                     case 3:
+                        showEmployee();
                         break;
                     case 4:
-
-                        break;
-                    case 5:
-                        manageEmployees();
+                        updateEmployee();
                         break;
                     case 0:
                         System.out.println("Closing...");
@@ -195,5 +195,13 @@ public class view {
 
     public static void updateEmployee() throws MyException {
 
+    }
+
+    public static void showEmployee() throws MyException {
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        System.out.println("-- EMPLOYEES --");
+        for (Employee e : employees) {
+            System.out.println(e.toString());
+        }
     }
 }
