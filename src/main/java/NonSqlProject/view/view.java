@@ -8,6 +8,7 @@ import NonSqlProject.model.Incidence;
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoDB;
 
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -33,7 +34,7 @@ public class view {
                         showInc();
                         break;
                     case 4:
-                        
+                        modifyInc();
                         break;
                     case 5:
                         manageEmployees();
@@ -53,12 +54,7 @@ public class view {
 
     public static void createInc() throws MyException {
         Type type;
-        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
-        int index = 1;
-        System.out.println("-- EMPLOYEES --");
-        for (Employee e : employees) {
-            System.out.println(index + ". " + e.getUsername());
-        }
+        ArrayList <Employee> employees = showEmployees();
         int recipientIndex = InputAsker.askInt("Select the recipient: ", 1, employees.size());
         Employee recipient = employees.get(recipientIndex - 1);
         String details = InputAsker.askString("Introduce incidence details:");
@@ -75,11 +71,7 @@ public class view {
     }
 
     public static void deleteInc() throws MyException {
-        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
-        System.out.println("-- INCIDENCES --");
-        for (Incidence i : incidences) {
-            System.out.println(i);
-        }
+        showIncidences();
         int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?");
         Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
         dao.deleteIncidence(incidence);
@@ -87,14 +79,43 @@ public class view {
     }
 
     public static void showInc() {
-        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
-        System.out.println("-- INCIDENCES --");
-        for (Incidence i : incidences) {
-            System.out.println(i);
-        }
+        showIncidences();
     }
 
-    public static void modifyInc(Incidence i) {
+    public static void modifyInc() throws MyException {
+        showIncidences();
+        int indexIncidence = InputAsker.askInt("Which incidence do you want to update?");
+        Incidence incidence = dao.getIncidenceById(String.valueOf(indexIncidence));
+        System.out.println("== Properties == \n"
+                + "1. Recipient\n"
+                + "2. Details\n"
+                + "3. Type");
+        int indexProperty = InputAsker.askInt("Which attribute do you want to update?");
+        switch(indexProperty) {
+            case 1:
+                ArrayList <Employee> employees = showEmployees();
+                int indexEmployee = InputAsker.askInt("Select a new employee:",1,employees.size());
+                Employee employee = employees.get(indexEmployee - 1);
+                incidence.setDestination(employee);
+                break;
+            case 2:
+                String details = InputAsker.askString("Introduce the new details:");
+                incidence.setDetails(details);
+                break;
+            case 3:
+                Type type;
+                System.out.println(" 1. Normal\n" + "2. Urgent");
+                int typeIndex = InputAsker.askInt("Select a incidence type: ", 1, 2);
+                if (typeIndex == 1) {
+                    type = Type.NORMAL;
+                } else {
+                    type = Type.URGENT;
+                }
+                incidence.setType(type);
+                break;
+        }
+
+        dao.updateIncidence(incidence);
 
     }
 
@@ -140,6 +161,25 @@ public class view {
 
         //Employee empleado = new Employee("pepe", "12345", "Pepito", "Jull", "5645454545");
         //dao.insertEmpleado(empleado);
+    }
+
+    public static ArrayList<Employee> showEmployees() {
+        ArrayList<Employee> employees = dao.getAllDocumentsEmployee();
+        int index = 1;
+        System.out.println("-- EMPLOYEES --");
+        for (Employee e : employees) {
+            System.out.println(index + ". " + e.getUsername());
+            index++;
+        }
+        return employees;
+    }
+
+    public static void showIncidences() {
+        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
+        System.out.println("-- INCIDENCES --");
+        for (Incidence i : incidences) {
+            System.out.println(i);
+        }
     }
 
     public static void manageEmployees() {

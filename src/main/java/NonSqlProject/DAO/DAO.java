@@ -9,11 +9,7 @@ import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
 import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
-import com.arangodb.ArangoCollection;
-import com.arangodb.ArangoCursor;
-import com.arangodb.ArangoDB;
-import com.arangodb.ArangoDBException;
-import com.arangodb.ArangoDatabase;
+import com.arangodb.*;
 import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
 import com.arangodb.util.MapBuilder;
@@ -91,10 +87,7 @@ public class DAO {
                 BaseDocument.class);
         if (myDocument == null) {
             return false;
-        } else if (!password.equals(myDocument.getAttribute("pass"))) {
-            return false;
-        }
-        return true;
+        } else return password.equals(myDocument.getAttribute("pass"));
     }
 
     public Collection<CollectionEntity> getAllCollections() {
@@ -106,7 +99,7 @@ public class DAO {
     public Employee getEmployeeByUsername(String username) {
         BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
                 BaseDocument.class);
-        Employee e = new Employee((String) myDocument.getKey(), (String) myDocument.getAttribute("pass"), (String) myDocument.getAttribute("firstName"), (String) myDocument.getAttribute("lastName"), (String) myDocument.getAttribute("phone"));
+        Employee e = new Employee(myDocument.getKey(), (String) myDocument.getAttribute("pass"), (String) myDocument.getAttribute("firstName"), (String) myDocument.getAttribute("lastName"), (String) myDocument.getAttribute("phone"));
         return e;
     }
 
@@ -122,7 +115,7 @@ public class DAO {
         Map<String, String> mapRecipient = (HashMap) myDocument.getAttribute("recipient");
         String usernameRecipient = mapRecipient.get("username");
         Employee recipient = getEmployeeByUsername(usernameRecipient);
-       
+
         Map<String, Map<String, Long>> allDates = new HashMap<String, Map<String, Long>>();
         allDates = (Map<String, Map<String, Long>>) myDocument.getAttribute("date");
         for (Map.Entry<String, Map<String, Long>> entry : allDates.entrySet()) {
@@ -151,7 +144,7 @@ public class DAO {
                     }
                 }
             }
-            LocalDateTime fecha = LocalDateTime.of((int)year,(int) month, (int)day, (int)hour,(int) minute, (int)second, (int)nano);
+            LocalDateTime fecha = LocalDateTime.of((int) year, (int) month, (int) day, (int) hour, (int) minute, (int) second, (int) nano);
 
             i = new Incidence(Integer.parseInt(myDocument.getKey()), fecha,
                     origin, recipient, (String) myDocument.getAttribute("details"), Type.valueOf(myDocument.getAttribute("type").toString()));
@@ -166,7 +159,6 @@ public class DAO {
         Map<String, Object> bindVars = new MapBuilder().get();
         ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
                 BaseDocument.class);
-
         cursor.forEachRemaining(aDocument -> {
             Employee e = getEmployeeByUsername(aDocument.getKey());
             employees.add(e);
@@ -180,10 +172,8 @@ public class DAO {
         Map<String, Object> bindVars = new MapBuilder().get();
         ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
                 BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {     
-            System.out.println("juan");
+        cursor.forEachRemaining(aDocument -> {
             Incidence i = getIncidenceById(aDocument.getKey());
-            System.out.println("pepe");
             incidences.add(i);
         });
         return incidences;
@@ -213,4 +203,15 @@ public class DAO {
         ArangoCollection collection = arangoDB.db("mydb").collection("incidence");
         return collection.getIndexes().size();
     }
+
+    public void updateIncidence(Incidence incidence) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("incidence");
+        try {
+            collection.updateDocument("myKey", incidence);
+        } catch (ArangoDBException e) {
+            throw new MyException(MyException.documentHaventBeenUpdated);
+        }
+    }
 }
+
