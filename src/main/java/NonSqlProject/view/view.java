@@ -235,6 +235,7 @@ public class view {
             case 3:
                 String phone = InputAsker.askString("Introduce your new phone:");
                 employee.setPhone(phone);
+                break;
             case 4:
                 String pass = InputAsker.askString("Introduce your new password: ");
                 employee.setPass(pass);
