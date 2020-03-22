@@ -18,7 +18,7 @@ public class view {
 
     public static void main(String[] args) {
         try {
-            int op = 0;
+            int op;
             do {
                 LogIn();
                 op = InputAsker.askInt("Select an Option: ");
@@ -30,9 +30,12 @@ public class view {
                         deleteInc();
                         break;
                     case 3:
-
+                        showInc();
                         break;
                     case 4:
+                        
+                        break;
+                    case 5:
                         manageEmployees();
                         break;
                     case 0:
@@ -83,8 +86,12 @@ public class view {
         System.out.println("Incidence successfully deleted");
     }
 
-    public static void showInc(Incidence i) {
-
+    public static void showInc() {
+        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
+        System.out.println("-- INCIDENCES --");
+        for (Incidence i : incidences) {
+            System.out.println(i);
+        }
     }
 
     public static void modifyInc(Incidence i) {
