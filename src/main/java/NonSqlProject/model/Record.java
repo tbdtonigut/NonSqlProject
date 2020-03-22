@@ -8,16 +8,39 @@ public class Record {
 
     private int id;
     private LocalDateTime dateTime;
-    private String userName;
+    private Employee employee;
     private EventType eventType;
 
-    public Record(LocalDateTime dateTime, String userName, EventType eventType) {
+    public Record(LocalDateTime dateTime, Employee employee, EventType eventType) {
         this.dateTime = dateTime;
-        this.userName = userName;
+        this.employee = employee;
+        this.eventType = eventType;
+    }
+
+    public Record(int id, LocalDateTime dateTime, Employee employee, EventType eventType) {
+        this.id = id;
+        this.dateTime = dateTime;
+        this.employee = employee;
         this.eventType = eventType;
     }
 
     public Record() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
     }
 
     public LocalDateTime getDateTime() {
@@ -28,12 +51,12 @@ public class Record {
         this.dateTime = dateTime;
     }
 
-    public String getUserName() {
-        return userName;
+    public Employee getUserName() {
+        return employee;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserName(Employee employee) {
+        this.employee = employee;
     }
 
     public EventType getEventType() {

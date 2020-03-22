@@ -3,8 +3,10 @@ package NonSqlProject.view;
 import NonSqlProject.DAO.DAO;
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import NonSqlProject.model.Enum.EventType;
 import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
+import NonSqlProject.model.Record;
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoDB;
 
@@ -39,6 +41,9 @@ public class view {
                     case 5:
                         manageEmployees();
                         break;
+                    case 6:
+                        showRecords();
+                        break;
                     case 0:
                         System.out.println("Closing...");
                         break;
@@ -50,6 +55,14 @@ public class view {
             System.out.println(ex.getMessage());
         }
 
+    }
+
+    private static void showRecords() {
+        ArrayList<Record> records = dao.getAllDocumentsRecord();
+        System.out.println("-- RECORDS --");
+        for (Record r : records) {
+            System.out.println(r);
+        }
     }
 
     public static void createInc() throws MyException {
@@ -64,6 +77,9 @@ public class view {
             type = Type.NORMAL;
         } else {
             type = Type.URGENT;
+            LocalDateTime localDateTime = LocalDateTime.now();
+            Record record = new Record(localDateTime,user,EventType.U);
+            dao.insertRecord(record);
         }
         Incidence incidence = new Incidence(LocalDateTime.now(), user, recipient, details, type);
         dao.insertIncidence(incidence);
@@ -78,8 +94,11 @@ public class view {
         System.out.println("Incidence successfully deleted");
     }
 
-    public static void showInc() {
+    public static void showInc() throws MyException {
         showIncidences();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Record record = new Record(localDateTime,user,EventType.C);
+        dao.insertRecord(record);
     }
 
     public static void modifyInc() throws MyException {
@@ -89,7 +108,9 @@ public class view {
         System.out.println("== Properties == \n"
                 + "1. Details\n"
                 + "2. Type");
+
         int indexProperty = InputAsker.askInt("Which attribute do you want to update?");
+
         switch(indexProperty) {
             case 1:
                 String details = InputAsker.askString("Introduce the new details:");
@@ -136,6 +157,9 @@ public class view {
         String pass = InputAsker.askString("Introduce your password:");
         if (dao.checkLogIn(username, pass)) {
             user = dao.getEmployeeByUsername(username);
+            LocalDateTime localDateTime = LocalDateTime.now();
+            Record record = new Record(localDateTime,user,EventType.I);
+            dao.insertRecord(record);
             showMenu();
         } else {
             System.out.println("You introduced wrong credentials");
@@ -151,9 +175,6 @@ public class view {
         dao.createColletion("employee");
         dao.createColletion("incidence");
         dao.createColletion("record");
-
-        //Employee empleado = new Employee("pepe", "12345", "Pepito", "Jull", "5645454545");
-        //dao.insertEmpleado(empleado);
     }
 
     public static ArrayList<Employee> showEmployees() {

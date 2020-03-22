@@ -7,8 +7,10 @@ package NonSqlProject.DAO;
 
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import NonSqlProject.model.Enum.EventType;
 import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
+import NonSqlProject.model.Record;
 import com.arangodb.*;
 import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
@@ -82,6 +84,19 @@ public class DAO {
         }
     }
 
+    public void insertRecord(Record record) throws MyException {
+        BaseDocument myObject = new BaseDocument();
+        myObject.setKey(null);
+        myObject.addAttribute("date", record.getDateTime());
+        myObject.addAttribute("employee", record.getUserName());
+        myObject.addAttribute("eventtype", record.getEventType());
+        try {
+            arangoDB.db(name).collection("record").insertDocument(myObject);
+        } catch (ArangoDBException ex) {
+            throw new MyException(MyException.documentoNotCreated);
+        }
+    }
+
     public boolean checkLogIn(String username, String password) throws MyException {
         BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
                 BaseDocument.class);
@@ -146,12 +161,11 @@ public class DAO {
                     }
                 }
             }
-            LocalDateTime fecha = LocalDateTime.of((int) year, (int) month, (int) day, (int) hour, (int) minute, (int) second, (int) nano);
-
-            i = new Incidence(Integer.parseInt(myDocument.getKey()), fecha,
-                    origin, recipient, (String) myDocument.getAttribute("details"), Type.valueOf(myDocument.getAttribute("type").toString()));
-
         }
+
+        LocalDateTime fecha = LocalDateTime.of((int) year, (int) month, (int) day, (int) hour, (int) minute, (int) second, (int) nano);
+        i = new Incidence(Integer.parseInt(myDocument.getKey()), fecha,
+                origin, recipient, (String) myDocument.getAttribute("details"), Type.valueOf(myDocument.getAttribute("type").toString()));
         return i;
     }
 
@@ -218,5 +232,62 @@ public class DAO {
 
     public void updateEmployee(Employee employee) {
 
+    }
+
+    public ArrayList<Record> getAllDocumentsRecord() {
+        ArrayList<Record> records = new ArrayList<>();
+        String query = "FOR r IN record RETURN r";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Record r = getRecordById(aDocument.getKey());
+            records.add(r);
+        });
+        return records;
+    }
+
+    private Record getRecordById(String key) {
+        Record r = new Record();
+        long month = 0, year = 0, day = 0, hour = 0, nano = 0, minute = 0, second = 0;
+        BaseDocument myDocument = arangoDB.db(name).collection("record").getDocument(key,
+                BaseDocument.class);
+
+        Map<String, String> mapEmployee = (HashMap) myDocument.getAttribute("employee");
+        String username = mapEmployee.get("username");
+        Employee employee = getEmployeeByUsername(username);
+
+        Map<String, Map<String, Long>> allDates = new HashMap<>();
+        allDates = (Map<String, Map<String, Long>>) myDocument.getAttribute("date");
+        for (Map.Entry<String, Map<String, Long>> entry : allDates.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase("date")) {
+                Map<String, Long> map = entry.getValue();
+                for (Map.Entry<String, Long> entry2 : map.entrySet()) {
+                    if (entry2.getKey().equalsIgnoreCase("month")) {
+                        month = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("year")) {
+                        year = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("day")) {
+                        day = entry2.getValue();
+                    }
+                }
+            } else if (entry.getKey().equalsIgnoreCase("time")) {
+                Map<String, Long> map = entry.getValue();
+                for (Map.Entry<String, Long> entry2 : map.entrySet()) {
+                    if (entry2.getKey().equalsIgnoreCase("hour")) {
+                        hour = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("nano")) {
+                        nano = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("minute")) {
+                        minute = entry2.getValue();
+                    } else if (entry2.getKey().equalsIgnoreCase("second")) {
+                        second = entry2.getValue();
+                    }
+                }
+            }
+        }
+        LocalDateTime date = LocalDateTime.of((int) year, (int) month, (int) day, (int) hour, (int) minute, (int) second, (int) nano);
+        r = new Record(Integer.parseInt(key), date, employee, EventType.valueOf((myDocument.getAttribute("eventtype").toString())));
+        return r;
     }
 }
