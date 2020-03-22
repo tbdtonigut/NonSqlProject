@@ -104,7 +104,7 @@ public class DAO {
     public Employee getEmployeeByUsername(String username) {
         BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(username,
                 BaseDocument.class);
-        Employee e = new Employee((String) myDocument.getId(), (String) myDocument.getAttribute("pass"), (String) myDocument.getAttribute("firstName"), (String) myDocument.getAttribute("lastName"), (String) myDocument.getAttribute("phone"));
+        Employee e = new Employee((String) myDocument.getKey(), (String) myDocument.getAttribute("pass"), (String) myDocument.getAttribute("firstName"), (String) myDocument.getAttribute("lastName"), (String) myDocument.getAttribute("phone"));
         return e;
     }
 
