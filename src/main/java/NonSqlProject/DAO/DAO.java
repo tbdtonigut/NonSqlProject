@@ -7,6 +7,7 @@ package NonSqlProject.DAO;
 
 import NonSqlProject.exception.MyException;
 import NonSqlProject.model.Employee;
+import NonSqlProject.model.Enum.Type;
 import NonSqlProject.model.Incidence;
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoCursor;
@@ -17,6 +18,7 @@ import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.CollectionEntity;
 import com.arangodb.util.MapBuilder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -108,6 +110,16 @@ public class DAO {
         return e;
     }
 
+    public Incidence getIncidenceById(String id) {
+        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(id,
+                BaseDocument.class);
+        Employee origin = getEmployeeByUsername((String) myDocument.getAttribute("origin"));
+        Employee recipient = getEmployeeByUsername((String) myDocument.getAttribute("recipient"));
+        Incidence i = new Incidence(Integer.parseInt(myDocument.getKey()), (LocalDateTime) myDocument.getAttribute("date"),
+                origin, recipient, (String) myDocument.getAttribute("details"),(Type) myDocument.getAttribute("type"));
+        return i;
+    }
+
     public ArrayList<Employee> getAllDocumentsEmployee() {
         ArrayList<Employee> employees = new ArrayList<>();
         String query = "FOR e IN employee RETURN e";
@@ -119,6 +131,29 @@ public class DAO {
             employees.add(e);
         });
         return employees;
+    }
+
+    public void deleteIncidence(Incidence i) throws MyException {
+        ArangoDatabase db = arangoDB.db(name);
+        ArangoCollection collection = db.collection("incidence");
+        if (!collection.documentExists(String.valueOf(i.getId()))) {
+            throw new MyException(MyException.documentDoesntExists);
+        } else {
+            collection.deleteDocument(String.valueOf(i.getId()));
+        }
+    }
+
+    public ArrayList<Incidence> getAllDocumentsIncidence() {
+        ArrayList<Incidence> incidences = new ArrayList<>();
+        String query = "FOR i IN incidence RETURN i";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            Incidence i = getIncidenceById(aDocument.getKey());
+            incidences.add(i);
+        });
+        return incidences;
     }
 
     public int getIncidencesCount() {

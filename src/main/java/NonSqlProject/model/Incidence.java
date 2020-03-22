@@ -21,7 +21,24 @@ public class Incidence {
         this.type = type;
     }
 
+    public Incidence(int id, LocalDateTime dateTime, Employee origin, Employee destination, String details, Type type) {
+        this.id = id;
+        this.dateTime = dateTime;
+        this.origin = origin;
+        this.destination = destination;
+        this.details = details;
+        this.type = type;
+    }
+
     public Incidence() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public LocalDateTime getDateTime() {
@@ -62,5 +79,15 @@ public class Incidence {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "Id:" + id +
+                "\n Date:" + dateTime +
+                "\n Origin:" + origin +
+                "\n Recipient:" + destination +
+                "\n Details:'" + details +
+                "\n Type:" + type;
     }
 }

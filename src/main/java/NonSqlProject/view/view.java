@@ -30,6 +30,7 @@ public class view {
 
                         break;
                     case 3:
+                        deleteInc();
                         break;
                     case 4:
                         manageEmployees();
@@ -70,8 +71,16 @@ public class view {
         System.out.println("Incidence successfully created");
     }
 
-    public static void deleteInc(Incidence i) {
-
+    public static void deleteInc() throws MyException {
+        ArrayList<Incidence> incidences = dao.getAllDocumentsIncidence();
+        System.out.println("-- INCIDENCES --");
+        for (Incidence i : incidences) {
+            System.out.println(i);
+        }
+        int indexIncidence = InputAsker.askInt("Which incidence do you want to delete?",1,incidences.size());
+        Incidence incidence = incidences.get(indexIncidence - 1);
+        dao.deleteIncidence(incidence);
+        System.out.println("Incidence successfully deleted");
     }
 
     public static void showInc(Incidence i) {

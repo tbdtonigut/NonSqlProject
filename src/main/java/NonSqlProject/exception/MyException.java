@@ -8,6 +8,7 @@ public class MyException extends Exception {
     public static final int documentoNotCreated = 3;
     public static final int wrongUsername = 4;
     public static final int wrongPass = 5;
+    public static final int documentDoesntExists = 6;
     
     public MyException(int errorCode) {
         super();
@@ -35,6 +36,9 @@ public class MyException extends Exception {
                 break;
             case wrongPass:
                 message = "You introduced a wrong password";
+                break;
+            case documentDoesntExists:
+                message = "Document doesn't exists";
                 break;
             default:
                 message = "Error";
