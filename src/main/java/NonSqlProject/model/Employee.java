@@ -19,6 +19,10 @@ public class Employee {
     public Employee() {
     }
 
+    public Employee(Object attribute) {
+        
+    }
+
     public String getUsername() {
         return username;
     }

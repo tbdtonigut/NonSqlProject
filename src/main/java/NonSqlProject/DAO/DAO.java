@@ -21,12 +21,14 @@ import com.arangodb.util.MapBuilder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DAO {
 
     final String name = "mydb";
-
+    Map<String, String> mapOrigin;
+    Map<String, String> mapReceptor;
     final ArangoDB arangoDB = new ArangoDB.Builder()
             .user("root")
             .password("admin")
@@ -111,12 +113,49 @@ public class DAO {
     }
 
     public Incidence getIncidenceById(String id) {
-        BaseDocument myDocument = arangoDB.db(name).collection("employee").getDocument(id,
+        BaseDocument myDocument = arangoDB.db(name).collection("incidence").getDocument(id,
                 BaseDocument.class);
-        Employee origin = getEmployeeByUsername((String) myDocument.getAttribute("origin"));
-        Employee recipient = getEmployeeByUsername((String) myDocument.getAttribute("recipient"));
+        mapOrigin = new HashMap<String, String>();
+        mapOrigin = (HashMap) myDocument.getAttribute("origin");
+        Employee origin = new Employee();
+        for (Map.Entry<String, String> entry : mapOrigin.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase("firstName")) {
+                origin.setFirstName(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
+                origin.setLastName(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("pass")) {
+                origin.setPhone(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("phone")) {
+                origin.setPhone(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("username")) {
+                String datos = entry.getValue();
+                String[] usernameParts = datos.split("/");
+                String username = usernameParts[1];
+                origin.setUsername(username);
+            }
+        }
+        mapReceptor = new HashMap<String, String>();
+        mapReceptor = (HashMap) myDocument.getAttribute("recipient");
+        Employee recipient = new Employee();
+        for (Map.Entry<String, String> entry : mapReceptor.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase("firstName")) {
+                recipient.setFirstName(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("lastName")) {
+                recipient.setLastName(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("pass")) {
+                recipient.setPhone(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("phone")) {
+                recipient.setPhone(entry.getValue());
+            } else if (entry.getKey().equalsIgnoreCase("username")) {
+                String datos = entry.getValue();
+                String[] usernameParts = datos.split("/");
+                String username = usernameParts[1];
+                recipient.setUsername(username);
+            }
+        }
+        
         Incidence i = new Incidence(Integer.parseInt(myDocument.getKey()), (LocalDateTime) myDocument.getAttribute("date"),
-                origin, recipient, (String) myDocument.getAttribute("details"),(Type) myDocument.getAttribute("type"));
+                origin, recipient, (String) myDocument.getAttribute("details"), (Type) myDocument.getAttribute("type"));
         return i;
     }
 
@@ -126,11 +165,26 @@ public class DAO {
         Map<String, Object> bindVars = new MapBuilder().get();
         ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
                 BaseDocument.class);
+
         cursor.forEachRemaining(aDocument -> {
             Employee e = getEmployeeByUsername(aDocument.getKey());
             employees.add(e);
         });
         return employees;
+    }
+
+    public ArrayList<Incidence> getAllDocumentsIncidence() {
+        ArrayList<Incidence> incidences = new ArrayList<>();
+        String query = "FOR i IN incidence RETURN i";
+        Map<String, Object> bindVars = new MapBuilder().get();
+        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
+                BaseDocument.class);
+        cursor.forEachRemaining(aDocument -> {
+            System.out.println(aDocument.getKey());
+            Incidence i = getIncidenceById(aDocument.getKey());
+            incidences.add(i);
+        });
+        return incidences;
     }
 
     public void deleteIncidence(Incidence i) throws MyException {
@@ -141,19 +195,6 @@ public class DAO {
         } else {
             collection.deleteDocument(String.valueOf(i.getId()));
         }
-    }
-
-    public ArrayList<Incidence> getAllDocumentsIncidence() {
-        ArrayList<Incidence> incidences = new ArrayList<>();
-        String query = "FOR i IN incidence RETURN i";
-        Map<String, Object> bindVars = new MapBuilder().get();
-        ArangoCursor<BaseDocument> cursor = arangoDB.db(name).query(query, bindVars, null,
-                BaseDocument.class);
-        cursor.forEachRemaining(aDocument -> {
-            Incidence i = getIncidenceById(aDocument.getKey());
-            incidences.add(i);
-        });
-        return incidences;
     }
 
     public int getIncidencesCount() {
